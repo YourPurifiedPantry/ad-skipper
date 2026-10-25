@@ -1,0 +1,6 @@
+# Local settings: holds the TV's pairing token
+config.json
+# Calibration output (captured from your camera)
+templates/
+snapshot.jpg
+__pycache__/
