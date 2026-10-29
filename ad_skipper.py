@@ -49,6 +49,11 @@ DEFAULT_CONFIG = {
         "settle_seconds": 1.5,       # wait after a press before looking again
         "back_up_after": True,       # step back once when the show returns
         "max_skip_seconds": 240,     # never skip more than this in one break
+        # On some TVs the first press only brings up the on-screen controls,
+        # and only later presses jump. If so, send one extra "wake" press when
+        # the controls have probably hidden (no press for hud_timeout_seconds).
+        "wake_first": True,
+        "hud_timeout_seconds": 3.0,
     },
     "detect": {
         "trigger_seconds": 4.0,      # graphic must be gone this long to count as an ad
@@ -100,6 +105,7 @@ class Vizio:
     def __init__(self, ip, port=7345, auth=""):
         self.base = f"https://{ip}:{port}"
         self.auth = auth
+        self.last_press = 0.0
 
     def _put(self, path, body, auth=True):
         headers = {"Content-Type": "application/json"}
@@ -111,6 +117,7 @@ class Vizio:
 
     def press(self, key_name):
         codeset, code = KEYS[key_name]
+        self.last_press = time.time()
         return self._put("/key_command/", {
             "KEYLIST": [{"CODESET": codeset, "CODE": code, "ACTION": "KEYPRESS"}]
         })
@@ -319,15 +326,23 @@ def cmd_watch(args, cfg):
         time.sleep(0.3)
 
 
+def press_jump(tv, key, sk):
+    """Press a jump key, first waking the on-screen controls if they've hidden."""
+    if sk["wake_first"] and time.time() - tv.last_press > sk["hud_timeout_seconds"]:
+        tv.press(key)
+        time.sleep(0.5)
+    tv.press(key)
+
+
 def skip_break(tv, cam, det, sk):
     skipped = 0
     while skipped < sk["max_skip_seconds"]:
-        tv.press(sk["forward_key"])
+        press_jump(tv, sk["forward_key"], sk)
         skipped += sk["step_seconds"]
         time.sleep(sk["settle_seconds"])
         if check_present(cam, det):
             if sk["back_up_after"]:
-                tv.press(sk["back_key"])
+                press_jump(tv, sk["back_key"], sk)
             log(f"show is back — skipped about {skipped}s")
             return True
     log(f"gave up after {skipped}s without seeing the graphic; watching again")

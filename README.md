@@ -64,7 +64,10 @@ You want the button that makes **one jump forward of a fixed amount** (often
 `step_seconds` to the size of the jump.
 
 If the first press only brings up the on-screen controls and the second
-actually jumps, tell me and I'll adjust the program for that.
+actually jumps, that's expected: the program sends one extra "wake" press
+whenever the controls have been hidden (`skip.wake_first`). If you see it
+skip twice on the first press of a break, set `wake_first` to `false` or
+raise `hud_timeout_seconds`; if a jump sometimes doesn't happen, lower it.
 
 ## 4. Teach it the graphics
 
@@ -130,6 +133,8 @@ See its log with `journalctl -u adskipper -f`.
 | `skip.settle_seconds` | 1.5 | Wait after each press. Raise it if the on-screen controls cover the graphic after a jump |
 | `skip.max_skip_seconds` | 240 | Safety limit per break, so halftime or a lost picture can't send it skipping to the end |
 | `skip.back_up_after` | true | Back up one step when the show returns |
+| `skip.wake_first` | true | Send an extra press first to bring up the on-screen controls, for TVs where the first press doesn't jump |
+| `skip.hud_timeout_seconds` | 3 | How long after a press the program assumes the on-screen controls have hidden again |
 
 ## Known limits
 
