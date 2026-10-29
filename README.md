@@ -24,7 +24,8 @@ glare-free view of the part of the screen where the graphic appears.
 1. Flash **Raspberry Pi OS (64-bit, with desktop)** with Raspberry Pi Imager.
    Set your Wi-Fi in the imager's settings.
 2. Copy `ad_skipper.py` and this README into a folder, e.g. `~/adskipper`.
-3. Install the extras:
+3. Install the extras (when `sudo` asks for your password, type it even
+   though nothing shows on screen, then press Enter):
    ```
    sudo apt update
    sudo apt install -y python3-opencv python3-requests
@@ -89,13 +90,19 @@ python3 ad_skipper.py calibrate --name bravo
 ```
 
 It will ask you to:
-1. Pause on a moment where the graphic is visible, then draw a **tight box
-   around the parts of the graphic that don't change** (the frame, the network
-   logo — not just the numbers).
-2. Go to a commercial so it can see what "gone" looks like.
+1. Let a recording **play** (don't pause: pausing brings up the on-screen
+   controls, which can dim or cover the graphic). Once the graphic is showing
+   and the controls have faded, press Enter, then draw a **tight box around
+   only the parts of the graphic that don't change** (the frame, the network
+   logo — not the numbers, and no background around it).
+2. Go to a commercial, wait for the on-screen controls to fade, and press
+   Enter so it can see what "gone" looks like.
 
 It then picks a detection threshold automatically and warns you if the
-difference is too small to be reliable.
+difference is too small to be reliable. Aim for a visible score around 0.9
+and a gone score well below that. If you get a WARNING, the usual fixes are
+a tighter box, moving the camera closer so the graphic is bigger in the
+picture, and less glare or lower exposure.
 
 Check that detection works:
 ```
