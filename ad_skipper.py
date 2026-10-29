@@ -48,6 +48,8 @@ DEFAULT_CONFIG = {
         "forward_key": "right",
         "back_key": "left",
         "step_seconds": 15,          # how far one forward press jumps
+        "later_jumps": 2,            # presses per check after the first check
+                                     # (2 = 30s steps once it's clearly an ad)
         "settle_seconds": 1.5,       # wait after a press before looking again
         "back_up_after": True,       # step back once when the show returns
         "resume_key": "",            # pressed after every jump, e.g. "play" if
@@ -385,10 +387,15 @@ def press_jump(tv, key, sk):
 
 def skip_break(tv, cam, det, sk):
     skipped = 0
+    jumps = 1  # first step is a single jump, in case it was a false alarm
     while skipped < sk["max_skip_seconds"]:
-        press_jump(tv, sk["forward_key"], sk)
+        for i in range(jumps):
+            if i:
+                time.sleep(0.4)
+            press_jump(tv, sk["forward_key"], sk)
+            skipped += sk["step_seconds"]
         resume(tv, sk)  # the picture must be playing for the camera to judge it
-        skipped += sk["step_seconds"]
+        jumps = max(1, sk["later_jumps"])
         time.sleep(sk["settle_seconds"])
         if check_present(cam, det):
             if sk["back_up_after"]:

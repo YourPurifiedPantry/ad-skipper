@@ -150,6 +150,7 @@ python3 ad_skipper.py set detect.trigger_seconds 12
 |---|---|---|
 | `detect.trigger_seconds` | 12 | How long the graphic must be gone before skipping. Raise it if replays or commentary trigger false skips |
 | `detect.min_present_seconds` | 10 | The graphic must be steadily visible this long before it will skip, so it leaves you alone in menus |
+| `skip.later_jumps` | 2 | After the first 15s jump, how many jumps to make between checks (2 = 30s at a time). Set to 1 for 15s steps the whole way |
 | `skip.settle_seconds` | 1.5 | Wait after each press. Raise it if the on-screen controls cover the graphic after a jump |
 | `skip.max_skip_seconds` | 240 | Safety limit per break, so halftime or a lost picture can't send it skipping to the end |
 | `skip.back_up_after` | true | Back up one step when the show returns |
