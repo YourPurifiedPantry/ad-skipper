@@ -153,7 +153,7 @@ python3 ad_skipper.py set detect.trigger_seconds 12
 | `skip.settle_seconds` | 1.5 | Wait after each press. Raise it if the on-screen controls cover the graphic after a jump |
 | `skip.max_skip_seconds` | 240 | Safety limit per break, so halftime or a lost picture can't send it skipping to the end |
 | `skip.back_up_after` | true | Back up one step when the show returns |
-| `skip.resume_key` | (none) | Button pressed after skipping, e.g. `play` if the video is left paused |
+| `skip.resume_key` | (none) | Button pressed after every jump, e.g. `play` if jumping leaves the video paused |
 | `skip.wake_first` | true | Send an extra press first to bring up the on-screen controls, for TVs where the first press doesn't jump |
 | `skip.hud_timeout_seconds` | 3 | How long after a press the program assumes the on-screen controls have hidden again |
 

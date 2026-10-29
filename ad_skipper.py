@@ -50,8 +50,8 @@ DEFAULT_CONFIG = {
         "step_seconds": 15,          # how far one forward press jumps
         "settle_seconds": 1.5,       # wait after a press before looking again
         "back_up_after": True,       # step back once when the show returns
-        "resume_key": "",            # pressed when done skipping, e.g. "play" if
-                                     # the video is left paused; "" = don't
+        "resume_key": "",            # pressed after every jump, e.g. "play" if
+                                     # jumping leaves the video paused; "" = don't
         "max_skip_seconds": 240,     # never skip more than this in one break
         # On some TVs the first press only brings up the on-screen controls,
         # and only later presses jump. If so, send one extra "wake" press when
@@ -387,15 +387,15 @@ def skip_break(tv, cam, det, sk):
     skipped = 0
     while skipped < sk["max_skip_seconds"]:
         press_jump(tv, sk["forward_key"], sk)
+        resume(tv, sk)  # the picture must be playing for the camera to judge it
         skipped += sk["step_seconds"]
         time.sleep(sk["settle_seconds"])
         if check_present(cam, det):
             if sk["back_up_after"]:
                 press_jump(tv, sk["back_key"], sk)
-            resume(tv, sk)
+                resume(tv, sk)
             log(f"show is back — skipped about {skipped}s")
             return True
-    resume(tv, sk)
     log(f"gave up after {skipped}s without seeing the graphic; watching again")
     return False
 
