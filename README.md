@@ -141,13 +141,19 @@ See its log with `journalctl -u adskipper -f`.
 
 ## Settings worth tuning (`config.json`)
 
+Change any of these with the `set` command, for example:
+```
+python3 ad_skipper.py set detect.trigger_seconds 12
+```
+
 | Setting | Default | What it does |
 |---|---|---|
-| `detect.trigger_seconds` | 4 | How long the graphic must be gone before skipping. Raise it if replays or wide shots trigger false skips |
+| `detect.trigger_seconds` | 12 | How long the graphic must be gone before skipping. Raise it if replays or commentary trigger false skips |
 | `detect.min_present_seconds` | 10 | The graphic must be steadily visible this long before it will skip, so it leaves you alone in menus |
 | `skip.settle_seconds` | 1.5 | Wait after each press. Raise it if the on-screen controls cover the graphic after a jump |
 | `skip.max_skip_seconds` | 240 | Safety limit per break, so halftime or a lost picture can't send it skipping to the end |
 | `skip.back_up_after` | true | Back up one step when the show returns |
+| `skip.resume_key` | (none) | Button pressed after skipping, e.g. `play` if the video is left paused |
 | `skip.wake_first` | true | Send an extra press first to bring up the on-screen controls, for TVs where the first press doesn't jump |
 | `skip.hud_timeout_seconds` | 3 | How long after a press the program assumes the on-screen controls have hidden again |
 

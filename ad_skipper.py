@@ -19,6 +19,7 @@ Commands
   python3 ad_skipper.py calibrate --name football   # teach it a graphic
   python3 ad_skipper.py watch                       # live detection readout
   python3 ad_skipper.py run                         # the real thing
+  python3 ad_skipper.py set detect.trigger_seconds 12   # change a setting
 """
 
 import argparse
@@ -49,6 +50,8 @@ DEFAULT_CONFIG = {
         "step_seconds": 15,          # how far one forward press jumps
         "settle_seconds": 1.5,       # wait after a press before looking again
         "back_up_after": True,       # step back once when the show returns
+        "resume_key": "",            # pressed when done skipping, e.g. "play" if
+                                     # the video is left paused; "" = don't
         "max_skip_seconds": 240,     # never skip more than this in one break
         # On some TVs the first press only brings up the on-screen controls,
         # and only later presses jump. If so, send one extra "wake" press when
@@ -57,7 +60,7 @@ DEFAULT_CONFIG = {
         "hud_timeout_seconds": 3.0,
     },
     "detect": {
-        "trigger_seconds": 4.0,      # graphic must be gone this long to count as an ad
+        "trigger_seconds": 12.0,     # graphic must be gone this long to count as an ad
         "min_present_seconds": 10.0, # graphic must have been visible this long first
         "cooldown_seconds": 20.0,    # ignore disappearances right after a skip
         "fps": 5,
@@ -250,6 +253,30 @@ def cmd_pair(args, cfg):
     log("Paired! Saved to config.json.")
 
 
+def cmd_set(args, cfg):
+    try:
+        section, key = args.setting.split(".")
+        old = cfg[section][key]
+    except (ValueError, KeyError):
+        names = [f"{s}.{k}" for s, v in DEFAULT_CONFIG.items() if isinstance(v, dict)
+                 for k in v if s != "tv"]
+        sys.exit("Unknown setting. Choose from:\n  " + "\n  ".join(names))
+    if isinstance(old, bool):
+        new = args.value.lower() in ("true", "yes", "on", "1")
+    elif isinstance(old, (int, float)):
+        try:
+            new = type(old)(float(args.value))
+        except ValueError:
+            sys.exit(f"{args.setting} needs a number.")
+    else:
+        new = args.value
+        if key.endswith("_key") and new and new not in KEYS:
+            sys.exit(f"Unknown button. Choose from: {', '.join(sorted(KEYS))}")
+    cfg[section][key] = new
+    save_config(cfg)
+    log(f"{args.setting}: {old} -> {new}")
+
+
 def cmd_test_key(args, cfg):
     t = cfg["tv"]
     if not t["auth"]:
@@ -365,10 +392,18 @@ def skip_break(tv, cam, det, sk):
         if check_present(cam, det):
             if sk["back_up_after"]:
                 press_jump(tv, sk["back_key"], sk)
+            resume(tv, sk)
             log(f"show is back — skipped about {skipped}s")
             return True
+    resume(tv, sk)
     log(f"gave up after {skipped}s without seeing the graphic; watching again")
     return False
+
+
+def resume(tv, sk):
+    if sk["resume_key"]:
+        time.sleep(0.5)
+        tv.press(sk["resume_key"])
 
 
 def cmd_run(args, cfg):
@@ -429,10 +464,14 @@ def main():
     sub.add_parser("watch", help="live detection readout")
     sub.add_parser("run", help="start auto-skipping")
 
+    p = sub.add_parser("set", help="change a setting, e.g. set detect.trigger_seconds 12")
+    p.add_argument("setting")
+    p.add_argument("value")
+
     args = ap.parse_args()
     cfg = load_config()
     {"pair": cmd_pair, "test-key": cmd_test_key, "preview": cmd_preview, "calibrate": cmd_calibrate,
-     "watch": cmd_watch, "run": cmd_run}[args.cmd](args, cfg)
+     "watch": cmd_watch, "run": cmd_run, "set": cmd_set}[args.cmd](args, cfg)
 
 
 if __name__ == "__main__":
