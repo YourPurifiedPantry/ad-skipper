@@ -71,6 +71,14 @@ raise `hud_timeout_seconds`; if a jump sometimes doesn't happen, lower it.
 
 ## 4. Teach it the graphics
 
+First aim the camera. With the Pi's desktop showing, run:
+```
+python3 ad_skipper.py preview
+```
+A window shows what the camera sees, live. Move the camera until the graphic
+is clear and there's no glare, then click the window and press `q` to close
+it. (Once you've calibrated, the window also outlines each area it watches.)
+
 Do this once per graphic. For football, calibrate each network you watch
 (CBS, Fox, NBC, ESPN…), since each places its score bug differently. For
 reality shows, use the network's corner logo.

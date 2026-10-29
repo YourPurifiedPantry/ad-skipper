@@ -15,6 +15,7 @@ Commands
 --------
   python3 ad_skipper.py pair --ip 192.168.1.50      # one-time: pair with the TV
   python3 ad_skipper.py test-key right              # see what a button does
+  python3 ad_skipper.py preview                     # live camera view, for aiming
   python3 ad_skipper.py calibrate --name football   # teach it a graphic
   python3 ad_skipper.py watch                       # live detection readout
   python3 ad_skipper.py run                         # the real thing
@@ -259,6 +260,27 @@ def cmd_test_key(args, cfg):
         time.sleep(args.gap)
 
 
+def cmd_preview(args, cfg):
+    c = cfg["camera"]
+    cam = Camera(c["index"], c["width"], c["height"])
+    log("Showing the camera. Click the window and press q (or Esc) to close.")
+    try:
+        while True:
+            frame = cam.read()
+            # outline the areas already calibrated, so you can check the aim
+            for p in cfg["profiles"]:
+                x, y, w, h = p["search"]
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.putText(frame, p["name"], (x, max(15, y - 6)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            cv2.imshow("Camera preview", frame)
+            if cv2.waitKey(30) & 0xFF in (ord("q"), 27):
+                break
+    except cv2.error:
+        sys.exit("No screen available to show the camera. Run this from the Pi's desktop.")
+    cv2.destroyAllWindows()
+
+
 def cmd_calibrate(args, cfg):
     c = cfg["camera"]
     cam = Camera(c["index"], c["width"], c["height"])
@@ -398,6 +420,8 @@ def main():
     p.add_argument("--times", type=int, default=1)
     p.add_argument("--gap", type=float, default=1.0)
 
+    sub.add_parser("preview", help="live camera view, for aiming the camera")
+
     p = sub.add_parser("calibrate", help="teach it a graphic to watch for")
     p.add_argument("--name", required=True, help="e.g. football, hgtv, bravo")
     p.add_argument("--roi", help="x,y,width,height if no screen is attached")
@@ -407,7 +431,7 @@ def main():
 
     args = ap.parse_args()
     cfg = load_config()
-    {"pair": cmd_pair, "test-key": cmd_test_key, "calibrate": cmd_calibrate,
+    {"pair": cmd_pair, "test-key": cmd_test_key, "preview": cmd_preview, "calibrate": cmd_calibrate,
      "watch": cmd_watch, "run": cmd_run}[args.cmd](args, cfg)
 
 
